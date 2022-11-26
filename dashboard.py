@@ -1,8 +1,16 @@
 from tkinter import * # For GUI
 from PIL import Image,ImageTk #pip install pillow.. Import this library to use Gifs and Jpeg type images
 #from categories import categoriesClass
+from suppliers import suppliersClass
+from categories import categoryClass
+from product import productClass
+from checkout import checkoutClass
+import time
+import sqlite3
+from tkinter import messagebox
+import os
 
-class IMS: # Making a class to provide structure, so that the widgets are defined in one place inside the constructor and the functions are defined later in the code.
+class EMS: # Making a class to provide structure, so that the widgets are defined in one place inside the constructor and the functions are defined later in the code.
     def __init__(self,root):               # Default constructor and passing the object 'root'
         self.root = root                   # Initializing the TK() object with self. so that it recognizes that the object belongs to class, otherwise the functions wouldn't be able to use this object
         self.root.geometry("1350x700+0+0") # Geometry helps to give width and height to window. Then giving starting point for x and y axes as 0 for both
@@ -13,7 +21,7 @@ class IMS: # Making a class to provide structure, so that the widgets are define
         title = Label(self.root, text="Equipment Checkout System",font=("Apple Symbols",35,"bold"),bg="#222222", fg="white" ,anchor="center",padx=10,pady=10).place(x=0,y=0,relwidth=1,height=70) # place is used to place the label in the frame, relwidth will refer our parent root object width
 
         #===btn_logout=====
-        btn_logout = Button(self.root, text="Logout",font=("Apple Symbols",15,"bold"), bg="#55AAFF", cursor="hand2").place(x=1150,y=20,width=150,height=30)
+        btn_logout = Button(self.root, text="Logout",command=self.logout,font=("Apple Symbols",15,"bold"), bg="#55AAFF", cursor="hand2").place(x=1150,y=20,width=150,height=30)
         
         #===clock===== We will be making clock as self because we will use it further to configure
         self.lbl_clock = Label(self.root, text="Welcome\t\t Date: MM-DD-YYYY\t\t Time: HH:MM:SS", font=("Apple Symbols",15),bg="#808080", fg="white") 
@@ -33,10 +41,10 @@ class IMS: # Making a class to provide structure, so that the widgets are define
         self.icon_arrow = PhotoImage(file="images/arrow.png")
 
         lbl_menu = Label(LeftMenu, text="Menu",font=("Apple Symbols",20), bg="#808080",fg="white").pack(side=TOP,fill=X) #pack is to place but with features like fill x axis, side it to TOP. TOP here will place this label below the previous TOP.
-        btn_category = Button(LeftMenu, text="Categories",command=self.categories,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
-        btn_equipments = Button(LeftMenu, text="Equipments",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
-        btn_supplier = Button(LeftMenu, text="Suppliers",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
-        btn_checkouts = Button(LeftMenu, text="Checkouts",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_category = Button(LeftMenu, text="Manage Categories",command=self.category,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_equipments = Button(LeftMenu, text="Manage Equipments",command=self.product,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_supplier = Button(LeftMenu, text="Manage Suppliers",command=self.suppliers,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        btn_checkouts = Button(LeftMenu, text="View Checkouts",command=self.checkout,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_exit = Button(LeftMenu, text="Exit",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         
         #======CONTENT========
@@ -55,14 +63,58 @@ class IMS: # Making a class to provide structure, so that the widgets are define
         #===FOOTER===== This time no 'self.lbl_footer' required because we wont be configuring this label later
         lbl_footer = Label(self.root, text="Equipment Checkout System\nDeveloped by Team: Group 2 of SSW540 Class 2022", font=("Apple Symbols",15),bg="#808080", fg="white").pack(side=BOTTOM,fill=X) #using pack this time because it is easier
 
+        self.update_content()
 #========================================================================================
 
-    def categories(self): # Now whatever we defined with 'self' can be used within this employee function
-        self.new_win= Toplevel(self.root) #to use this 'root' here we had defined 'root' with 'self' earlier.
-    #   self.new_obj= categoriesClass(self.new_win) 
+    def suppliers(self):
+        self.new_win= Toplevel(self.root)
+        self.new_obj= suppliersClass(self.new_win)
 
+    def category(self): # Now whatever we defined with 'self' can be used within this employee function
+        self.new_win= Toplevel(self.root) #to use this 'root' here we had defined 'root' with 'self' earlier.
+        self.new_obj= categoryClass(self.new_win) 
+
+    def product(self):
+        self.new_win= Toplevel(self.root)
+        self.new_obj= productClass(self.new_win)
+
+    def checkout(self):
+        self.new_win= Toplevel(self.root)
+        self.new_obj= checkoutClass(self.new_win)
+
+    def update_content(self):
+        con= sqlite3.connect(database=r'ems.db')
+        cur = con.cursor()
+        try:
+            cur.execute("select * from product")
+            product = cur.fetchall()
+            self.lbl_equipments.config(text=f'Total Equipments\n[ {str(len(product))} ]')
+
+            cur.execute("select * from category")
+            category = cur.fetchall()
+            self.lbl_categories.config(text=f'Total Categories\n[ {str(len(category))} ]')
+
+            cur.execute("select * from suppliers")
+            supplier = cur.fetchall()
+            self.lbl_suppliers.config(text=f'Total Suppliers\n[ {str(len(supplier))} ]')
+
+            cur.execute("select * from checkouts")
+            checkouts = cur.fetchall()
+            self.lbl_checkouts.config(text=f'Total Checkouts\n[ {str(len(checkouts))} ]')
+
+            time_= time.strftime("%I:%M:%S %p")
+            date_= time.strftime("%m-%d-%Y")
+            self.lbl_clock.config(text=f"Welcome\t\t Date: {str(date_)}\t\t Time: {str(time_)}")
+            self.lbl_clock.after(200,self.update_content)
+        except Exception as ex:
+            messagebox.showerror("Error",f"Error due to : {str(ex)}")
+
+    def logout(self):
+        self.root.destroy()
+        os.system("python login.py")
 
 if __name__=="__main__": # So if the name is 'main' then it should open dashboard. we are making dashboard our main function page
     root = Tk()                # Creating an object for Tkinter class, This root is like our frame in which we will work
-    obj = IMS(root)            # Creating an object for IMS class and passing root into it so that Tkinter class is attached with it 
+    obj = EMS(root)            # Creating an object for IMS class and passing root into it so that Tkinter class is attached with it 
     root.mainloop()            # Using mainloop so that the window stays until it is closed otherwise the window just exits after the program is run and this is what makes the window stay on the screen until closed
+

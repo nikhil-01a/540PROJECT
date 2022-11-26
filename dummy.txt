@@ -1,0 +1,125 @@
+ #======searchFrame========
+        SearchFrame=LabelFrame(self.root,text="Search Equipment",font=("goudy old style",12,"bold"), bd=2, relief=RIDGE, bg="white")
+        SearchFrame.place(x=480,y=10,width=600,height=80)
+
+            #======options=======
+        cmb_search=ttk.Combobox(SearchFrame,textvariable=self.var_searchby,values=("Select","Category","Supplier","Name"),state='readonly',justify=CENTER,font=("goudy old style",15))
+        cmb_search.place(x=10,y=10,width=180)
+        cmb_search.current(0)
+
+        txt_search= Entry(SearchFrame,textvariable=self.var_searchtxt,font=("goudy old style",15),bg="lightyellow").place(x=200,y=10)
+        btn_search= Button(SearchFrame,text="Search",command=self.search,font=("goudy old style",15),bg="#4caf50",cursor="hand2").place(x=410,y=9,width=150,height=30)
+
+       #=======Supplier Treeview ====
+
+        p_frame = Frame(self.root,bd=3,relief=RIDGE)
+        p_frame.place(x=480,y=100,width=600,height=390)
+
+        scrolly = Scrollbar(p_frame,orient=VERTICAL)
+        scrollx = Scrollbar(p_frame, orient=HORIZONTAL)
+
+        self.product_table = ttk.Treeview(p_frame,columns=("pid","Category","Supplier","name","qty","Status"),yscrollcommand=scrolly.set,xscrollcommand=scrollx.set)
+        scrollx.pack(side=BOTTOM,fill=X)
+        scrolly.pack(side=RIGHT,fill=Y)
+        
+        scrollx.config(command=self.product_table.xview)
+        scrolly.config(command=self.product_table.yview)
+
+        self.product_table.heading("pid", text="Equipment ID")
+        self.product_table.heading("Category", text="Category")
+        self.product_table.heading("Supplier", text="Supplier")
+        self.product_table.heading("name", text="Name")
+        self.product_table.heading("qty", text="Quantity")
+        self.product_table.heading("Status", text="Status")
+        self.product_table["show"]="headings" #To remove the extra column given by default and show only headings
+
+        #fixing every column's width
+        self.product_table.column("pid",width=90)
+        self.product_table.column("Category",width=100)
+        self.product_table.column("Supplier",width=100)
+        self.product_table.column("name",width=100)
+        self.product_table.column("qty",width=100)
+        self.product_table.column("Status",width=100)
+
+        self.product_table.pack(fill=BOTH,expand=1)
+        self.product_table.bind("<ButtonRelease-1>",self.get_data) #This is a type of event in our bind function. whenever you click and release this button, it calls a certain function, in this case it is get_data()
+
+        self.show()
+        
+
+        #=======Variables=========
+        self.var_supplierno = StringVar()
+        self.check_list= []
+
+        #==========title=======================
+        lbl_title = Label(self.root,text="View Checkouts",font=("goudy old style",30),bg="#184a45",fg="white").pack(side=TOP,fill=X)
+        lbl_supplierno = Label(self.root,text="Supplier No.",font=("times new roman",15),bg="white").place(x=50,y=100)
+        txt_supplierno = Entry(self.root,textvariable=self.var_supplierno,font=("times new roman",15),bg="lightyellow").place(x=160,y=100,width=180,height=28)
+
+        btn_search = Button(self.root,text="Search",command=self.search,font=("times new roman",15,"bold"),bg="#2196f3",cursor="hand2").place(x=360,y=100,width=120,height=28)
+        btn_clear = Button(self.root,text="Clear",command=self.clear,font=("times new roman",15,"bold"),bg="lightgray",cursor="hand2").place(x=490,y=100,width=120,height=28)
+
+        #============Checkout List==================
+        checkout_Frame=Frame(self.root,bd=3,relief=RIDGE)
+        checkout_Frame.place(x=50,y=140,width=200,height=330)
+
+        scrolly = Scrollbar(checkout_Frame,orient=VERTICAL)
+        self.Checkout_list=Listbox(checkout_Frame,font=("goudy old style",15),bg="white",yscrollcommand=scrolly.set)
+        scrolly.pack(side=RIGHT,fill=Y)
+        scrolly.config(command=self.Checkout_list.yview)
+        self.Checkout_list.pack(fill=BOTH,expand=1)
+        self.Checkout_list.bind("<ButtonRelease-1>",self.get_data)
+
+        #===========Checkout Area============
+        Info_Frame=Frame(self.root,bd=3,relief=RIDGE)
+        Info_Frame.place(x=280,y=140,width=410,height=330)
+
+        lbl_title2 = Label(Info_Frame,text="Checkout Information Area",font=("goudy old style",20),bg="orange").pack(side=TOP,fill=X)
+
+
+        scrolly2 = Scrollbar(Info_Frame,orient=VERTICAL)
+        self.Info_Area=Text(Info_Frame,font=("goudy old style",15),bg="lightyellow",yscrollcommand=scrolly2.set)
+        scrolly2.pack(side=RIGHT,fill=Y)
+        scrolly2.config(command=self.Info_Area.yview)
+        self.Info_Area.pack(fill=BOTH,expand=1)
+
+        self.show()
+
+#===========================================================================================
+
+    def show(self):
+        del self.check_list[:]
+        self.Checkout_list.delete(0,END)
+        #print(os.listdir('Checkout'))
+        for i in os.listdir('Checkout'):
+            if i.split('.')[-1] == 'txt':
+                self.Checkout_list.insert(END,i)
+                self.check_list.append(i.split('.')[0])
+
+    def get_data(self,ev):
+        index_=self.Checkout_list.curselection()
+        file_name = self.Checkout_list.get(index_)
+        #print(file_name)
+        self.Info_Area.delete('1.0',END)
+        fp = open(f'Checkout/{file_name}','r')
+        for i in fp:
+            self.Info_Area.insert(END,i)
+        fp.close()
+
+    def search(self):
+        if self.var_supplierno.get()=="":
+            messagebox.showerror("Error","Supplier no. is required",parent=self.root)
+        else:
+            if self.var_supplierno.get() in self.check_list:
+                fp = open(f'Checkout/{self.var_supplierno.get()}.txt','r')
+                self.Info_Area.delete('1.0',END)
+                for i in fp:
+                    self.Info_Area.insert(END,i)
+                fp.close()
+            else:
+                messagebox.showerror("Error","Invalid supplier no.",parent=self.root)
+
+    def clear(self):
+        self.show()
+        self.Info_Area.delete('1.0',END)
+
