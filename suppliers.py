@@ -44,8 +44,8 @@ class suppliersClass: # Making a class to provide structure, so that the widgets
 
         #=====content=======
         #=====row1==========
-        lbl_supid=Label(self.root,text="Supplier ID",font=("goudy old style",15),bg="white").place(x=50,y=150)
-        txt_supid=Entry(self.root,textvariable=self.var_sup_id,font=("goudy old style",15),bg="lightyellow").place(x=150,y=150,width=180)
+        lbl_supid=Label(self.root,text="Admin/Supplier ID",font=("goudy old style",15),bg="white").place(x=50,y=150)
+        txt_supid=Entry(self.root,textvariable=self.var_sup_id,font=("goudy old style",15),bg="lightyellow").place(x=200,y=150,width=180)
 
         #====row2==========
         lbl_name=Label(self.root,text="Name",font=("goudy old style",15),bg="white").place(x=50,y=190)

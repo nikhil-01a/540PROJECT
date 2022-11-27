@@ -45,7 +45,7 @@ class EMS: # Making a class to provide structure, so that the widgets are define
         btn_equipments = Button(LeftMenu, text="Manage Equipments",command=self.product,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_supplier = Button(LeftMenu, text="Manage Suppliers",command=self.suppliers,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         btn_checkouts = Button(LeftMenu, text="View Checkouts",command=self.checkout,image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
-        btn_exit = Button(LeftMenu, text="Exit",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
+        #btn_exit = Button(LeftMenu, text="Exit",image=self.icon_arrow,compound=LEFT,padx=5,anchor="w",font=("Apple Symbols",20,"bold"), bg="white",bd=3,cursor="hand2").pack(side=TOP,fill=X)
         
         #======CONTENT========
         self.lbl_categories = Label(self.root,text="Total Categories\n[ 0 ]",bd=5,relief="ridge",bg="#808080", fg="white")
